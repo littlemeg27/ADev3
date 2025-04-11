@@ -33,6 +33,11 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.fragment)
+    implementation(libs.google.play.services.maps)
+    implementation(libs.google.play.services.location)
+    implementation(libs.androidx.core)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

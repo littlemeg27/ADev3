@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Maps&amp;DeviceFeatures</string>
+    <string name="app_name">Maps &amp; Device Features</string>
+    <string name="photo_note">Note: %s</string>
+    <string name="photo_location">Lat: %.6f, Long: %.6f</string>
 </resources>
