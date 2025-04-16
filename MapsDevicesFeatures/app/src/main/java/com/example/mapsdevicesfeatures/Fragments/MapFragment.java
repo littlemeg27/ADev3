@@ -1,4 +1,4 @@
-package com.example.mapsdevicefeatures.Fragments;
+package com.example.mapsdevicesfeatures.Fragments;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -14,10 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.mapsdevicefeatures.Operations.MainActivity;
-import com.example.mapsdevicefeatures.Operations.PhotoData;
-import com.example.mapsdevicefeatures.Operations.PhotoDataEntity;
-import com.example.mapsdevicefeatures.R;
+import com.example.mapsdevicesfeatures.Operations.MainActivity;
+import com.example.mapsdevicesfeatures.Operations.PhotoData;
+import com.example.mapsdevicesfeatures.Operations.PhotoDataEntity;
+import com.example.mapsdevicesfeatures.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;

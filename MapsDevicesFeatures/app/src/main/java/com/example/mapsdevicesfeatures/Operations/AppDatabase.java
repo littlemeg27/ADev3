@@ -1,10 +1,10 @@
-package com.example.mapsdevicefeatures.Operations;
+package com.example.mapsdevicesfeatures.Operations;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {PhotoDataEntity.class}, version = 1)
+@Database(entities = {com.example.mapsdevicesfeatures.Operations.PhotoDataEntity.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase
 {
-    public abstract PhotoDao photoDao();
+    public abstract com.example.mapsdevicesfeatures.Operations.PhotoDao photoDao();
 }

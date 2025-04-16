@@ -1,4 +1,4 @@
-package com.example.mapsdevicefeatures.Operations;
+package com.example.mapsdevicesfeatures.Operations;
 
 import android.net.Uri;
 import android.os.Parcel;

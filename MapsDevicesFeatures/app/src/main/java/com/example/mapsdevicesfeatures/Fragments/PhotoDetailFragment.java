@@ -1,4 +1,4 @@
-package com.example.mapsdevicefeatures.Fragments;
+package com.example.mapsdevicesfeatures.Fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,8 +7,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
-import com.example.mapsdevicefeatures.Operations.PhotoData;
-import com.example.mapsdevicefeatures.R;
+import com.example.mapsdevicesfeatures.Operations.PhotoData;
+import com.example.mapsdevicesfeatures.R;
 import java.util.Locale;
 
 public class PhotoDetailFragment extends Fragment
@@ -21,7 +21,8 @@ public class PhotoDetailFragment extends Fragment
         // Required empty public constructor
     }
 
-    public static PhotoDetailFragment newInstance(PhotoData photoData) {
+    public static PhotoDetailFragment newInstance(PhotoData photoData)
+    {
         PhotoDetailFragment fragment = new PhotoDetailFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_PHOTO_DATA, photoData);

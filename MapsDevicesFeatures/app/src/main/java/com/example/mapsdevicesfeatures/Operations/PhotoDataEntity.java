@@ -1,10 +1,11 @@
-package com.example.mapsdevicefeatures.Operations;
+package com.example.mapsdevicesfeatures.Operations;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "photos")
-public class PhotoDataEntity {
+public class PhotoDataEntity
+{
     @PrimaryKey(autoGenerate = true)
     public int id;
     public String photoUri;
@@ -12,7 +13,8 @@ public class PhotoDataEntity {
     public double latitude;
     public double longitude;
 
-    public PhotoDataEntity(String photoUri, String note, double latitude, double longitude) {
+    public PhotoDataEntity(String photoUri, String note, double latitude, double longitude)
+    {
         this.photoUri = photoUri;
         this.note = note;
         this.latitude = latitude;

@@ -14,14 +14,18 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.example.mediaplayback.R;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MediaPlayerService extends Service {
+public class MediaPlayerService extends Service
+{
     private static final String TAG = "MediaPlayerService";
     private final IBinder binder = new MediaPlayerBinder();
     private MediaPlayer mediaPlayer;
@@ -31,42 +35,86 @@ public class MediaPlayerService extends Service {
     private boolean isShuffling = false;
     private static final String CHANNEL_ID = "MediaPlaybackChannel";
     private static final int NOTIFICATION_ID = 1;
+    private static final Map<Integer, String> SONG_TITLES = new HashMap<>();
 
-    public class MediaPlayerBinder extends Binder {
-        MediaPlayerService getService() {
+    static
+    {
+        SONG_TITLES.put(R.raw.song1, "Song 1");
+        SONG_TITLES.put(R.raw.song2, "Song 2");
+        SONG_TITLES.put(R.raw.song3, "Song 3");
+    }
+
+    public class MediaPlayerBinder extends Binder
+    {
+        public MediaPlayerService getService() {
             return MediaPlayerService.this;
         }
     }
 
     @Override
-    public void onCreate() {
+    public void onCreate()
+    {
         super.onCreate();
         songList = new ArrayList<>();
-        songList.add(R.raw.song1);
-        songList.add(R.raw.song2);
-        songList.add(R.raw.song3);
+        try
+        {
+            songList.add(R.raw.song1);
+            songList.add(R.raw.song2);
+            songList.add(R.raw.song3);
+        } catch (Exception e)
+        {
+            Log.e(TAG, "Failed to initialize song list; ensure MP3 files exist in res/raw/", e);
+        }
+        if (songList.isEmpty())
+        {
+            Log.w(TAG, "Song list is empty; add MP3 files to res/raw/");
+        }
         createNotificationChannel();
     }
 
+    @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(Intent intent)
+    {
         return binder;
     }
 
-    public void playSong() {
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
+    public void playSong()
+    {
+        if (songList.isEmpty())
+        {
+            Log.e(TAG, "Song list is empty; cannot play");
+            return;
         }
+        if (mediaPlayer != null)
+        {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+
         mediaPlayer = MediaPlayer.create(this, songList.get(currentSongIndex));
-        mediaPlayer.setOnCompletionListener(mp -> {
-            if (!isLooping) {
-                skipNext();
-            } else {
-                playSong();
-            }
-        });
-        mediaPlayer.start();
-        updateNotification();
+
+        if (mediaPlayer != null)
+        {
+            mediaPlayer.setOnCompletionListener(mp ->
+            {
+                if (!isLooping)
+                {
+                    skipNext();
+                }
+                else
+                {
+                    playSong();
+                }
+            });
+            mediaPlayer.setLooping(isLooping);
+            mediaPlayer.start();
+            updateNotification();
+        }
+        else
+        {
+            Log.e(TAG, "Failed to create MediaPlayer for song index: " + currentSongIndex);
+        }
     }
 
     public void pauseSong() {
@@ -76,8 +124,10 @@ public class MediaPlayerService extends Service {
         }
     }
 
-    public void stopSong() {
-        if (mediaPlayer != null) {
+    public void stopSong()
+    {
+        if (mediaPlayer != null)
+        {
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
@@ -85,100 +135,140 @@ public class MediaPlayerService extends Service {
         }
     }
 
-    public void skipNext() {
-        if (isShuffling) {
+    public void skipNext()
+    {
+        if (songList.isEmpty())
+        {
+            Log.e(TAG, "Song list is empty; cannot skip next");
+            return;
+        }
+        if (isShuffling)
+        {
             Collections.shuffle(songList);
         }
         currentSongIndex = (currentSongIndex + 1) % songList.size();
         playSong();
     }
 
-    public void skipPrevious() {
+    public void skipPrevious()
+    {
+        if (songList.isEmpty())
+        {
+            Log.e(TAG, "Song list is empty; cannot skip previous");
+            return;
+        }
         currentSongIndex = (currentSongIndex - 1 + songList.size()) % songList.size();
         playSong();
     }
 
-    public void setLooping(boolean looping) {
+    public void setLooping(boolean looping)
+    {
         isLooping = looping;
-        if (mediaPlayer != null) {
+        if (mediaPlayer != null)
+        {
             mediaPlayer.setLooping(looping);
         }
     }
 
-    public void setShuffling(boolean shuffling) {
+    public void setShuffling(boolean shuffling)
+    {
         isShuffling = shuffling;
     }
 
-    public int getCurrentPosition() {
+    public int getCurrentPosition()
+    {
         return mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
     }
 
-    public int getDuration() {
+    public int getDuration()
+    {
         return mediaPlayer != null ? mediaPlayer.getDuration() : 0;
     }
 
-    public void seekTo(int position) {
-        if (mediaPlayer != null) {
+    public void seekTo(int position)
+    {
+        if (mediaPlayer != null)
+        {
             mediaPlayer.seekTo(position);
         }
     }
 
-    public boolean isPlaying() {
+    public boolean isPlaying()
+    {
         return mediaPlayer != null && mediaPlayer.isPlaying();
     }
 
-    public String getCurrentSongTitle() {
-        int songId = songList.get(currentSongIndex);
-        if (songId == R.raw.song1) {
-            return "Song 1";
-        } else if (songId == R.raw.song2) {
-            return "Song 2";
-        } else if (songId == R.raw.song3) {
-            return "Song 3";
-        } else {
-            return "Unknown";
+    public String getCurrentSongTitle()
+    {
+        if (songList.isEmpty() || currentSongIndex >= songList.size())
+        {
+            return "No Song";
         }
+        Integer songId = songList.get(currentSongIndex);
+        return SONG_TITLES.getOrDefault(songId, "Unknown");
     }
 
-    public Bitmap getCurrentAlbumArt() {
-        try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
+    public Bitmap getCurrentAlbumArt()
+    {
+        if (songList.isEmpty() || currentSongIndex >= songList.size())
+        {
+            return null;
+        }
+        try (MediaMetadataRetriever retriever = new MediaMetadataRetriever())
+        {
             String uri = "android.resource://" + getPackageName() + "/" + songList.get(currentSongIndex);
             retriever.setDataSource(this, android.net.Uri.parse(uri));
             byte[] art = retriever.getEmbeddedPicture();
-            if (art != null) {
+
+            if (art != null)
+            {
                 return BitmapFactory.decodeByteArray(art, 0, art.length);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error getting album art", e);
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "Error retrieving album art", e);
         }
         return null;
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
-        if (mediaPlayer != null) {
+        stopForeground(true);
+
+        if (mediaPlayer != null)
+        {
             mediaPlayer.release();
             mediaPlayer = null;
         }
     }
 
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    private void createNotificationChannel()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Media Playback",
                     NotificationManager.IMPORTANCE_LOW
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+
+            if (manager != null)
+            {
+                manager.createNotificationChannel(channel);
+            }
         }
     }
 
-    private void updateNotification() {
+    private void updateNotification()
+    {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(
-                this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music)
@@ -187,11 +277,12 @@ public class MediaPlayerService extends Service {
                 .setLargeIcon(getCurrentAlbumArt())
                 .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setStyle(new NotificationCompat.MediaStyle());
+                .setStyle(new NotificationCompat.BigPictureStyle());
 
         Intent playPauseIntent = new Intent(this, MediaPlayerService.class).setAction("PLAY_PAUSE");
         PendingIntent playPausePendingIntent = PendingIntent.getService(
-                this, 0, playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                this, 0, playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
         builder.addAction(new NotificationCompat.Action(
                 isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play,
                 isPlaying() ? "Pause" : "Play",
@@ -200,7 +291,8 @@ public class MediaPlayerService extends Service {
 
         Intent skipNextIntent = new Intent(this, MediaPlayerService.class).setAction("SKIP_NEXT");
         PendingIntent skipNextPendingIntent = PendingIntent.getService(
-                this, 0, skipNextIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                this, 0, skipNextIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
         builder.addAction(new NotificationCompat.Action(
                 R.drawable.ic_skip_next,
                 "Next",
@@ -211,13 +303,19 @@ public class MediaPlayerService extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && intent.getAction() != null) {
-            switch (intent.getAction()) {
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
+        if (intent != null && intent.getAction() != null)
+        {
+            switch (intent.getAction())
+            {
                 case "PLAY_PAUSE":
-                    if (isPlaying()) {
+                    if (isPlaying())
+                    {
                         pauseSong();
-                    } else {
+                    }
+                    else
+                    {
                         playSong();
                     }
                     break;

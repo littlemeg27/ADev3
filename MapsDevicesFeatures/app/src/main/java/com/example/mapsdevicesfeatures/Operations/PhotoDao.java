@@ -1,4 +1,4 @@
-package com.example.mapsdevicefeatures.Operations;
+package com.example.mapsdevicesfeatures.Operations;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
@@ -9,8 +9,8 @@ import java.util.List;
 public interface PhotoDao
 {
     @Insert
-    void insert(PhotoDataEntity photo);
+    void insert(com.example.mapsdevicesfeatures.Operations.PhotoDataEntity photo);
 
     @Query("SELECT * FROM photos")
-    List<PhotoDataEntity> getAllPhotos();
+    List<com.example.mapsdevicesfeatures.Operations.PhotoDataEntity> getAllPhotos();
 }

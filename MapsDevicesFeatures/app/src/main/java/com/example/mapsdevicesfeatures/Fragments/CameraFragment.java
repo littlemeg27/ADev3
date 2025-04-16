@@ -1,4 +1,4 @@
-package com.example.mapsdevicefeatures.Fragments;
+package com.example.mapsdevicesfeatures.Fragments;
 
 import android.Manifest;
 import android.app.Activity;
@@ -22,10 +22,10 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import com.example.mapsdevicefeatures.Operations.MainActivity;
-import com.example.mapsdevicefeatures.Operations.PhotoData;
-import com.example.mapsdevicefeatures.Operations.PhotoDataEntity;
-import com.example.mapsdevicefeatures.R;
+import com.example.mapsdevicesfeatures.Operations.MainActivity;
+import com.example.mapsdevicesfeatures.Operations.PhotoData;
+import com.example.mapsdevicesfeatures.Operations.PhotoDataEntity;
+import com.example.mapsdevicesfeatures.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -35,7 +35,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class CameraFragment extends Fragment {
+public class CameraFragment extends Fragment
+{
     private Uri photoUri;
     private ImageView photoPreview;
     private EditText noteInput;
@@ -43,35 +44,44 @@ public class CameraFragment extends Fragment {
     private ActivityResultLauncher<Intent> takePictureLauncher;
     private ActivityResultLauncher<String> requestLocationPermissionLauncher;
 
-    public CameraFragment() {
+    public CameraFragment()
+    {
         // Required empty public constructor
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         takePictureLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
+                result ->
+                {
+                    if (result.getResultCode() == Activity.RESULT_OK)
+                    {
                         photoPreview.setImageURI(photoUri);
                     }
                 });
 
         requestLocationPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
-                isGranted -> {
-                    if (isGranted) {
+                isGranted ->
+                {
+                    if (isGranted)
+                    {
                         savePhoto();
-                    } else {
+                    }
+                    else
+                    {
                         Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         View view = inflater.inflate(R.layout.fragment_camera, container, false);
 
         photoPreview = view.findViewById(R.id.photo_preview);
@@ -87,16 +97,22 @@ public class CameraFragment extends Fragment {
         return view;
     }
 
-    private void dispatchTakePictureIntent() {
+    private void dispatchTakePictureIntent()
+    {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+
+        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null)
+        {
             File photoFile = null;
-            try {
+            try
+            {
                 photoFile = createImageFile();
-            } catch (IOException ex) {
+            } catch (IOException ex)
+            {
                 Toast.makeText(requireContext(), "Error creating file", Toast.LENGTH_SHORT).show();
             }
-            if (photoFile != null) {
+            if (photoFile != null)
+            {
                 photoUri = FileProvider.getUriForFile(
                         requireContext(),
                         "com.example.mapsdevicefeatures.fileprovider",
@@ -108,38 +124,44 @@ public class CameraFragment extends Fragment {
         }
     }
 
-    private File createImageFile() throws IOException {
+    private File createImageFile() throws IOException
+    {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
-    private void savePhoto() {
-        if (photoUri == null) {
+    private void savePhoto()
+    {
+        if (photoUri == null)
+        {
             Toast.makeText(requireContext(), "Please take a photo first", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String note = noteInput.getText().toString().trim();
-        if (note.isEmpty()) {
+        if (note.isEmpty())
+        {
             Toast.makeText(requireContext(), "Please enter a note", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
             requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
             return;
         }
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-            if (location != null) {
+        fusedLocationClient.getLastLocation().addOnSuccessListener(location ->
+        {
+            if (location != null)
+            {
                 PhotoData photo = new PhotoData(photoUri, note, location.getLatitude(), location.getLongitude());
                 MapFragment.addPhoto(photo);
 
-                // Save to Room
-                new Thread(() -> {
+                new Thread(() ->
+                {
                     PhotoDataEntity entity = new PhotoDataEntity(
                             photo.getPhotoUri().toString(),
                             photo.getNote(),
@@ -151,7 +173,9 @@ public class CameraFragment extends Fragment {
 
                 Toast.makeText(requireContext(), "Photo saved", Toast.LENGTH_SHORT).show();
                 ((MainActivity) requireActivity()).switchToMapFragment();
-            } else {
+            }
+            else
+            {
                 Toast.makeText(requireContext(), "Unable to get location", Toast.LENGTH_SHORT).show();
             }
         });
