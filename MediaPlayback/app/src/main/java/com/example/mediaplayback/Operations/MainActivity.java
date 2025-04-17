@@ -7,6 +7,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.mediaplayback.Fragments.PlaybackFragment;
 import com.example.mediaplayback.R;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// MainActivity
+
 public class MainActivity extends AppCompatActivity
 {
     @Override

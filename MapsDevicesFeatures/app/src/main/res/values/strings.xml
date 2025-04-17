@@ -2,4 +2,15 @@
     <string name="app_name">Maps &amp; Device Features</string>
     <string name="photo_note">Note: %s</string>
     <string name="photo_location">Lat: %.6f, Long: %.6f</string>
+    <string name="photo_preview_description">Photo Preview</string>
+    <string name="enter_note_hint">Enter Note</string>
+    <string name="capture_photo_button">Capture Photo</string>
+    <string name="save_photo_button">Save Photo</string>
+    <string name="action_camera">Take Photo</string>
+    <string name="action_map">View Map</string>
+    <string name="photo_detail_description">Photo detail</string>
+    <string name="detail_photo">Photo Details</string>
+    <string name="detail_note">Photo Note</string>
+    <string name="detail_location">Photo Location</string>
+
 </resources>

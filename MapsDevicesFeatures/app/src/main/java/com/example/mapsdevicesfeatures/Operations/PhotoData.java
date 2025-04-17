@@ -3,13 +3,18 @@ package com.example.mapsdevicesfeatures.Operations;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import androidx.annotation.NonNull;
+
+// Brenna Pavlinchak
+// AD3 - C202504
+// PhotoData
 
 public class PhotoData implements Parcelable
 {
-    private Uri photoUri;
-    private String note;
-    private double latitude;
-    private double longitude;
+    private final Uri photoUri;
+    private final String note;
+    private final double latitude;
+    private final double longitude;
 
     public PhotoData(Uri photoUri, String note, double latitude, double longitude)
     {
@@ -30,7 +35,8 @@ public class PhotoData implements Parcelable
     public static final Creator<PhotoData> CREATOR = new Creator<PhotoData>()
     {
         @Override
-        public PhotoData createFromParcel(Parcel in) {
+        public PhotoData createFromParcel(Parcel in)
+        {
             return new PhotoData(in);
         }
 
@@ -41,22 +47,6 @@ public class PhotoData implements Parcelable
         }
     };
 
-    @Override
-    public int describeContents()
-    {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags)
-    {
-        dest.writeParcelable(photoUri, flags);
-        dest.writeString(note);
-        dest.writeDouble(latitude);
-        dest.writeDouble(longitude);
-    }
-
-    // Getters
     public Uri getPhotoUri()
     {
         return photoUri;
@@ -75,5 +65,20 @@ public class PhotoData implements Parcelable
     public double getLongitude()
     {
         return longitude;
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags)
+    {
+        dest.writeParcelable(photoUri, flags);
+        dest.writeString(note);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
     }
 }

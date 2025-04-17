@@ -1,6 +1,5 @@
 package com.example.mediaplayback.Operations;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -23,6 +22,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+// Brenna Pavlinchak
+// AD3 - C202504
+// MediaPlayerService
 
 public class MediaPlayerService extends Service
 {

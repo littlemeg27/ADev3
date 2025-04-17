@@ -4,10 +4,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +35,12 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+
+// Brenna Pavlinchak
+// AD3 - C202504
+// CameraFragment
 
 public class CameraFragment extends Fragment
 {
@@ -42,6 +49,7 @@ public class CameraFragment extends Fragment
     private EditText noteInput;
     private FusedLocationProviderClient fusedLocationClient;
     private ActivityResultLauncher<Intent> takePictureLauncher;
+    private ActivityResultLauncher<String> requestCameraPermissionLauncher;
     private ActivityResultLauncher<String> requestLocationPermissionLauncher;
 
     public CameraFragment()
@@ -60,7 +68,32 @@ public class CameraFragment extends Fragment
                 {
                     if (result.getResultCode() == Activity.RESULT_OK)
                     {
-                        photoPreview.setImageURI(photoUri);
+                        if (photoUri != null)
+                        {
+                            photoPreview.setImageURI(photoUri);
+                        }
+                        else
+                        {
+                            Toast.makeText(requireContext(), "Failed to load photo", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else
+                    {
+                        Toast.makeText(requireContext(), "Photo capture cancelled", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        requestCameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted ->
+                {
+                    if (isGranted)
+                    {
+                        dispatchTakePictureIntent();
+                    }
+                    else
+                    {
+                        Toast.makeText(requireContext(), "Camera permission denied", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -91,7 +124,17 @@ public class CameraFragment extends Fragment
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        captureButton.setOnClickListener(v -> dispatchTakePictureIntent());
+        captureButton.setOnClickListener(v ->
+        {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+            {
+                dispatchTakePictureIntent();
+            }
+            else
+            {
+                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+            }
+        });
         saveButton.setOnClickListener(v -> savePhoto());
 
         return view;
@@ -99,28 +142,55 @@ public class CameraFragment extends Fragment
 
     private void dispatchTakePictureIntent()
     {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Log.d("CameraFragment", "Attempting to dispatch camera intent");
 
-        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null)
+        if (!requireContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
         {
-            File photoFile = null;
-            try
-            {
-                photoFile = createImageFile();
-            } catch (IOException ex)
-            {
-                Toast.makeText(requireContext(), "Error creating file", Toast.LENGTH_SHORT).show();
-            }
-            if (photoFile != null)
-            {
-                photoUri = FileProvider.getUriForFile(
-                        requireContext(),
-                        "com.example.mapsdevicefeatures.fileprovider",
-                        photoFile
-                );
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                takePictureLauncher.launch(takePictureIntent);
-            }
+            Log.e("CameraFragment", "No camera hardware available");
+            Toast.makeText(requireContext(), "No camera hardware available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        List<ResolveInfo> activities = requireContext().getPackageManager().queryIntentActivities(takePictureIntent, 0);
+
+        if (activities.isEmpty())
+        {
+            Log.e("CameraFragment", "No activities found to handle camera intent");
+            Toast.makeText(requireContext(), "No camera app available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d("CameraFragment", "Found " + activities.size() + " activities to handle camera intent");
+
+        for (ResolveInfo info : activities)
+        {
+            Log.d("CameraFragment", "Activity: " + info.activityInfo.packageName);
+        }
+
+        File photoFile;
+
+        try
+        {
+            photoFile = createImageFile();
+            photoUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.example.mapsdevicesfeatures.mappingphotos.fileprovider",
+                    photoFile
+            );
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+            Log.d("CameraFragment", "Launching camera intent with URI: " + photoUri);
+            takePictureLauncher.launch(takePictureIntent);
+        }
+        catch (IOException ex)
+        {
+            Log.e("CameraFragment", "Error creating file", ex);
+            Toast.makeText(requireContext(), "Error creating file", Toast.LENGTH_SHORT).show();
+        }
+        catch (IllegalArgumentException ex)
+        {
+            Log.e("CameraFragment", "FileProvider error", ex);
+            Toast.makeText(requireContext(), "FileProvider error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -129,6 +199,11 @@ public class CameraFragment extends Fragment
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        if (storageDir == null)
+        {
+            throw new IOException("Storage directory not available");
+        }
         return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
@@ -153,31 +228,34 @@ public class CameraFragment extends Fragment
             return;
         }
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(location ->
-        {
-            if (location != null)
-            {
-                PhotoData photo = new PhotoData(photoUri, note, location.getLatitude(), location.getLongitude());
-                MapFragment.addPhoto(photo);
-
-                new Thread(() ->
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location ->
                 {
-                    PhotoDataEntity entity = new PhotoDataEntity(
-                            photo.getPhotoUri().toString(),
-                            photo.getNote(),
-                            photo.getLatitude(),
-                            photo.getLongitude()
-                    );
-                    MainActivity.database.photoDao().insert(entity);
-                }).start();
+                    if (location != null)
+                    {
+                        PhotoData photo = new PhotoData(photoUri, note, location.getLatitude(), location.getLongitude());
+                        MapFragment.addPhoto(photo);
 
-                Toast.makeText(requireContext(), "Photo saved", Toast.LENGTH_SHORT).show();
-                ((MainActivity) requireActivity()).switchToMapFragment();
-            }
-            else
-            {
-                Toast.makeText(requireContext(), "Unable to get location", Toast.LENGTH_SHORT).show();
-            }
-        });
+                        new Thread(() ->
+                        {
+                            PhotoDataEntity entity = new PhotoDataEntity(
+                                    photo.getPhotoUri().toString(),
+                                    photo.getNote(),
+                                    photo.getLatitude(),
+                                    photo.getLongitude()
+                            );
+                            MainActivity.database.photoDao().insert(entity);
+                        }).start();
+
+                        Toast.makeText(requireContext(), "Photo saved", Toast.LENGTH_SHORT).show();
+                        ((MainActivity) requireActivity()).switchToMapFragment();
+                    }
+                    else
+                    {
+                        Toast.makeText(requireContext(), "Unable to get location", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(requireContext(), "Location error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

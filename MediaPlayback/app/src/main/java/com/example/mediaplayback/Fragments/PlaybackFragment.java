@@ -22,6 +22,10 @@ import androidx.fragment.app.Fragment;
 import com.example.mediaplayback.Operations.MediaPlayerService;
 import com.example.mediaplayback.R;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// PlaybackFragment
+
 public class PlaybackFragment extends Fragment
 {
     private MediaPlayerService mediaPlayerService;

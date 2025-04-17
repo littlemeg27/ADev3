@@ -3,6 +3,10 @@ package com.example.mapsdevicesfeatures.Operations;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// PhotoDataEntity
+
 @Entity(tableName = "photos")
 public class PhotoDataEntity
 {

@@ -7,14 +7,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
-
+import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
-import com.example.mapsdevicesfeatures.Operations.MainActivity;
+import com.example.mapsdevicesfeatures.Operations.AppDatabase;
 import com.example.mapsdevicesfeatures.Operations.PhotoData;
 import com.example.mapsdevicesfeatures.Operations.PhotoDataEntity;
 import com.example.mapsdevicesfeatures.R;
@@ -22,142 +21,162 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.ArrayList;
 import java.util.List;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener
-{
-    private MapView mapView;
-    private GoogleMap googleMap;
-    private static final List<PhotoData> photoList = new ArrayList<>();
+// Brenna Pavlinchak
+// AD3 - C202504
+// MapFragment
 
-    public MapFragment() {}
+public class MapFragment extends Fragment implements OnMapReadyCallback
+{
+    private GoogleMap mMap;
+    private FusedLocationProviderClient fusedLocationClient;
+    private ActivityResultLauncher<String> requestLocationPermissionLauncher;
+    private List<PhotoDataEntity> photos;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+
+        requestLocationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted ->
+                {
+                    if (isGranted)
+                    {
+                        if (mMap != null)
+                        {
+                            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                            {
+                                mMap.setMyLocationEnabled(true);
+                                getDeviceLocation();
+                                loadPhotoMarkers();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        mapView = view.findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
 
-        new Thread(() ->
+        if (mapFragment != null)
         {
-            List<PhotoDataEntity> entities = MainActivity.database.photoDao().getAllPhotos();
-            photoList.clear();
-            for (PhotoDataEntity entity : entities)
-            {
-                photoList.add(new PhotoData(
-                        Uri.parse(entity.photoUri),
-                        entity.note,
-                        entity.latitude,
-                        entity.longitude
-                ));
-            }
-            requireActivity().runOnUiThread(() ->
-            {
-                if (googleMap != null)
-                {
-                    googleMap.clear();
-                    for (PhotoData photo : photoList)
-                    {
-                        LatLng position = new LatLng(photo.getLatitude(), photo.getLongitude());
-                        googleMap.addMarker(new MarkerOptions()
-                                .position(position)
-                                .title("Photo")
-                                .snippet(photo.getNote()));
-                    }
-                }
-            });
-        }).start();
-
-        Button takePhotoButton = view.findViewById(R.id.take_photo_button);
-        takePhotoButton.setOnClickListener(v -> ((MainActivity) requireActivity()).switchToCameraFragment());
+            mapFragment.getMapAsync(this);
+        }
+        else
+        {
+            Toast.makeText(requireContext(), "Map fragment not found", Toast.LENGTH_SHORT).show();
+        }
 
         return view;
     }
 
     @Override
-    public void onMapReady(@NonNull GoogleMap map)
+    public void onMapReady(@NonNull GoogleMap googleMap)
     {
-        googleMap = map;
+        mMap = googleMap;
+
+        mMap.setOnMarkerClickListener(marker ->
+        {
+            String note = marker.getTitle();
+
+            for (PhotoDataEntity photo : photos)
+            {
+                if (photo.note.equals(note))
+                {
+                    PhotoData photoData = new PhotoData(
+                            Uri.parse(photo.photoUri),
+                            photo.note,
+                            photo.latitude,
+                            photo.longitude
+                    );
+                    getParentFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, PhotoDetailFragment.newInstance(photoData))
+                            .addToBackStack(null)
+                            .commit();
+                    return true;
+                }
+            }
+            return false;
+        });
+
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         {
-            googleMap.setMyLocationEnabled(true);
-            FusedLocationProviderClient locationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-            locationClient.getLastLocation().addOnSuccessListener(location ->
-            {
-                if (location != null)
-                {
-                    LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
-                }
-                else
-                {
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(28.590647, -81.304510), 10));
-                }
-            });
+            mMap.setMyLocationEnabled(true);
+            getDeviceLocation();
+            loadPhotoMarkers();
         }
         else
         {
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(28.590647, -81.304510), 10));
+            requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
         }
+    }
 
-        googleMap.setOnInfoWindowClickListener(this);
-        googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter()
+    private void getDeviceLocation()
+    {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(location ->
+            {
+                if (location != null)
+                {
+                    LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f));
+                }
+                else
+                {
+                    Toast.makeText(requireContext(), "Unable to get location", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void loadPhotoMarkers()
+    {
+        new Thread(() ->
         {
-            @Override
-            public View getInfoWindow(@NonNull Marker marker)
+            photos = AppDatabase.getDatabase(requireContext()).photoDao().getAllPhotos();
+            requireActivity().runOnUiThread(() ->
             {
-                return null;
-            }
+                mMap.clear();
+                for (PhotoDataEntity photo : photos)
+                {
+                    LatLng position = new LatLng(photo.latitude, photo.longitude);
+                    mMap.addMarker(new MarkerOptions()
+                            .position(position)
+                            .title(photo.note));
+                }
+            });
+        }).start();
+    }
 
-            @Override
-            public View getInfoContents(@NonNull Marker marker)
-            {
-                View view = LayoutInflater.from(requireContext()).inflate(R.layout.custom_info_window, null, false);
-                TextView title = view.findViewById(R.id.info_title);
-                TextView snippet = view.findViewById(R.id.info_snippet);
-
-                title.setText(marker.getTitle());
-                snippet.setText(marker.getSnippet());
-
-                return view;
-            }
-        });
+    public static void addPhoto(@SuppressWarnings("unused") PhotoData photo)
+    {
+        // Handled by database and refreshed on resume
     }
 
     @Override
-    public void onInfoWindowClick(@NonNull Marker marker)
+    public void onResume()
     {
-        for (PhotoData photo : photoList)
+        super.onResume();
+        if (mMap != null)
         {
-            if (Math.abs(photo.getLatitude() - marker.getPosition().latitude) < 0.00001 && Math.abs(photo.getLongitude() - marker.getPosition().longitude) < 0.00001)
-            {
-                PhotoDetailFragment detailFragment = PhotoDetailFragment.newInstance(photo);
-                requireActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, detailFragment)
-                        .addToBackStack(null)
-                        .commit();
-                break;
-            }
+            loadPhotoMarkers();
         }
-    }
-
-    @Override public void onResume() { super.onResume(); mapView.onResume(); }
-    @Override public void onPause() { super.onPause(); mapView.onPause(); }
-    @Override public void onDestroy() { super.onDestroy(); mapView.onDestroy(); }
-    @Override public void onLowMemory() { super.onLowMemory(); mapView.onLowMemory(); }
-
-    public static void addPhoto(PhotoData photo) {
-        photoList.add(photo);
     }
 }
