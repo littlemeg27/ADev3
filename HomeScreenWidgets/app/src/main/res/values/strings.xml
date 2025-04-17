@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Weather Widget</string>
+    <string name="widget_config_button">Configure</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="city_new_york">New York</string>
+    <string name="city_london">London</string>
+    <string name="city_tokyo">Tokyo</string>
+    <string name="weather_conditions">Conditions: %s</string>
+    <string name="weather_temp">Temp: %s°C</string>
+    <string name="weather_timestamp">Updated: %s</string>
+    <string name="forecast_title">3-Day Forecast</string>
+</resources>

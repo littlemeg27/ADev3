@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="theme_entries">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="theme_values">
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string-array name="city_entries">
+        <item>New York</item>
+        <item>London</item>
+        <item>Tokyo</item>
+    </string-array>
+    <string-array name="city_values">
+        <item>new_york</item>
+        <item>london</item>
+        <item>tokyo</item>
+    </string-array>
+</resources>
