@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:key="flipper_mode"
+        android:title="Flipper Mode"
+        android:entries="@array/flipper_mode_entries"
+        android:entryValues="@array/flipper_mode_values"
+        android:defaultValue="auto" />
+</PreferenceScreen>

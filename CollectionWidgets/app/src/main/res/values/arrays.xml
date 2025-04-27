@@ -1,0 +1,10 @@
+<resources>
+    <string-array name="flipper_mode_entries">
+        <item>Auto Advance</item>
+        <item>Manual Advance</item>
+    </string-array>
+    <string-array name="flipper_mode_values">
+        <item>auto</item>
+        <item>manual</item>
+    </string-array>
+</resources>

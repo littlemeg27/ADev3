@@ -33,6 +33,10 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.preference)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

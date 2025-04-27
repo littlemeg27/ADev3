@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Collection Widgets</string>
+    <string name="refresh_button">Refresh</string>
+    <string name="flipper_auto_advance">Auto Advance</string>
+    <string name="flipper_manual_advance">Manual Advance</string>
+    <string name="flipper_next">Next</string>
+    <string name="flipper_prev">Prev</string>
+    <string name="image_content_description">Widget Image</string>
+    <string name="refresh">Refresh</string>
+</resources>
