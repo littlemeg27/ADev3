@@ -1,6 +1,5 @@
 package com.example.unittesting.Util;
 
-
 import com.example.unittesting.Model.Person;
 import com.google.gson.Gson;
 
