@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">ApplicationTesting</string>
+    <string name="app_name">Application Testing</string>
+    <string name="delete">Delete</string>
+    <string name="item_id">Item ID</string>
+    <string name="item_name">Item Name</string>
+    <string name="description">Description</string>
+    <string name="save_item">Save</string>
+    <string name="items_will_appear_here">Items will appear here</string>
+    <string name="create_item">Create Item</string>
+    <string name="delete_item">Delete Item</string>
 </resources>

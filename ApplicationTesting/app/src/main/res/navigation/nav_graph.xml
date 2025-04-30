@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/itemListFragment"
-        android:name="com.example.applicationtesting.ui.fragments.ItemListFragment">
+        android:name="com.example.applicationtesting.Fragments.ItemListFragment">
         <action
             android:id="@+id/action_list_to_create"
             app:destination="@id/itemCreateFragment" />
@@ -17,10 +17,10 @@
 
     <fragment
         android:id="@+id/itemCreateFragment"
-        android:name="com.example.applicationtesting.ui.fragments.ItemCreateFragment" />
+        android:name="com.example.applicationtesting.Fragments.ItemCreateFragment" />
 
     <fragment
         android:id="@+id/itemDeleteFragment"
-        android:name="com.example.applicationtesting.ui.fragments.ItemDeleteFragment" />
+        android:name="com.example.applicationtesting.Fragments.ItemDeleteFragment" />
 
 </navigation>

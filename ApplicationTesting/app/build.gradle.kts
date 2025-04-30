@@ -6,6 +6,10 @@ android {
     namespace = "com.example.applicationtesting"
     compileSdk = 35
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     defaultConfig {
         applicationId = "com.example.applicationtesting"
         minSdk = 24
@@ -37,9 +41,13 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation(libs.navigation.fragment)
-    implementation(libs.navigation.ui)
+    implementation(libs.navigationFragment)
+    implementation(libs.navigationUi)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
+    testImplementation(libs.mockitoCore)
+    androidTestImplementation(libs.androidxTestCore)
+    androidTestImplementation(libs.extJunit)
+    androidTestImplementation(libs.espressoCore)
+    androidTestImplementation(libs.espressoIntents)
+    androidTestImplementation(libs.uiautomator)
 }
