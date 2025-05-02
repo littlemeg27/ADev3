@@ -1,8 +1,6 @@
 package com.example.collectionwidgets.Fragments;
 
-import android.appwidget.AppWidgetManager;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -21,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.example.collectionwidgets.Model.ImageData;
 import com.example.collectionwidgets.Operations.FlipperWidgetProvider;
-import com.example.collectionwidgets.Operations.StackWidgetProvider;
 import com.example.collectionwidgets.R;
 
 import java.util.ArrayList;
@@ -36,7 +33,7 @@ public class ImageGridFragment extends Fragment
     private GridView gridView;
     private Button refreshButton;
     private ImageAdapter adapter;
-    private List<ImageData> imageList = new ArrayList<>();
+    private final List<ImageData> imageList = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -53,12 +50,10 @@ public class ImageGridFragment extends Fragment
         refreshButton.setOnClickListener(v ->
         {
             loadImages();
-            StackWidgetProvider.updateAllWidgets(requireContext());
             FlipperWidgetProvider.updateAllWidgets(requireContext());
         });
 
-        gridView.setOnItemClickListener((parent, v, position, id) ->
-        {
+        gridView.setOnItemClickListener((parent, v, position, id) -> {
             ImageData image = imageList.get(position);
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(image.getUri(), "image/*");
@@ -94,8 +89,7 @@ public class ImageGridFragment extends Fragment
         adapter.notifyDataSetChanged();
     }
 
-    private class ImageAdapter extends BaseAdapter
-    {
+    private class ImageAdapter extends BaseAdapter {
         @Override
         public int getCount()
         {

@@ -23,9 +23,9 @@ import java.util.List;
 
 public class FlipperRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory
 {
-    private Context context;
-    private int appWidgetId;
-    private List<ImageData> imageList = new ArrayList<>();
+    private final Context context;
+    private final int appWidgetId;
+    private final List<ImageData> imageList = new ArrayList<>();
 
     public FlipperRemoteViewsFactory(Context context, Intent intent)
     {
@@ -66,6 +66,7 @@ public class FlipperRemoteViewsFactory implements RemoteViewsService.RemoteViews
             }
             cursor.close();
         }
+
     }
 
     @Override
@@ -75,22 +76,26 @@ public class FlipperRemoteViewsFactory implements RemoteViewsService.RemoteViews
     }
 
     @Override
-    public int getCount()
-    {
+    public int getCount() {
         return imageList.size();
     }
 
     @Override
     public RemoteViews getViewAt(int position)
     {
+        if (position >= imageList.size())
+        {
+            return null;
+        }
+
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_flipper_item);
         ImageData image = imageList.get(position);
-        views.setImageViewUri(R.id.flipper_image, image.getUri());
+        views.setImageViewUri(R.id.image_view, image.getUri());
 
         Intent fillInIntent = new Intent();
         fillInIntent.setData(image.getUri());
         fillInIntent.setAction(FlipperWidgetProvider.ACTION_VIEW_IMAGE);
-        views.setOnClickFillInIntent(R.id.flipper_image, fillInIntent);
+        views.setOnClickFillInIntent(R.id.image_view, fillInIntent);
 
         return views;
     }

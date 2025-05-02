@@ -7,4 +7,6 @@
     <string name="flipper_prev">Prev</string>
     <string name="image_content_description">Widget Image</string>
     <string name="refresh">Refresh</string>
+    <string name="flipper_image">Flipper Image</string>
+    <string name="stack_image">Stack Image</string>
 </resources>

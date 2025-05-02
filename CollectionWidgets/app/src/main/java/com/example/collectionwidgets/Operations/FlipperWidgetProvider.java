@@ -1,120 +1,120 @@
 package com.example.collectionwidgets.Operations;
 
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.view.View;
-import android.widget.AdapterViewFlipper;
-import android.widget.Button;
+import android.widget.RemoteViews;
 import com.example.collectionwidgets.R;
 import com.example.collectionwidgets.Service.FlipperWidgetService;
 
 // Brenna Pavlinchak
 // AD3 - C202504
-// FlipperManager (Non-widget alternative to FlipperWidgetProvider)
+// FlipperWidgetProvider (Updated with updateAllWidgets)
 
-public class FlipperManager {
-
-    private Context context;
-    private AdapterViewFlipper flipper;
-    private Button nextButton;
-    private Button prevButton;
-    private SharedPreferences prefs;
-    private int widgetId; // Simulate widget ID for SharedPreferences
+public class FlipperWidgetProvider extends AppWidgetProvider
+{
 
     public static final String ACTION_VIEW_IMAGE = "com.example.collectionwidgets.FLIPPER_VIEW_IMAGE";
+    public static final String ACTION_NEXT = "com.example.collectionwidgets.FLIPPER_NEXT";
+    public static final String ACTION_PREV = "com.example.collectionwidgets.FLIPPER_PREV";
+    public static final String EXTRA_WIDGET_ID = "widgetId";
 
-    public FlipperManager(Context context, AdapterViewFlipper flipper, Button nextButton, Button prevButton, int widgetId) {
-        this.context = context;
-        this.flipper = flipper;
-        this.nextButton = nextButton;
-        this.prevButton = prevButton;
-        this.widgetId = widgetId;
-        this.prefs = context.getSharedPreferences("WidgetPrefs", Context.MODE_PRIVATE);
-        initializeFlipper();
+    // New static method to update all widgets
+    public static void updateAllWidgets(Context context) {
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        ComponentName provider = new ComponentName(context, FlipperWidgetProvider.class);
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(provider);
+        for (int widgetId : appWidgetIds) {
+            updateWidget(context, appWidgetManager, widgetId);
+        }
     }
 
-    private void initializeFlipper() {
-        // Set adapter using FlipperWidgetService (assumes it provides a RemoteViewsFactory)
-        Intent serviceIntent = new Intent(context, FlipperWidgetService.class);
-        serviceIntent.putExtra("widgetId", widgetId); // Simulate AppWidgetManager.EXTRA_APPWIDGET_ID
-        flipper.setAdapter(new FlipperAdapter(context, serviceIntent));
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        for (int widgetId : appWidgetIds) {
+            updateWidget(context, appWidgetManager, widgetId);
+        }
+    }
 
-        // Configure auto/manual advance
-        String flipperMode = prefs.getString("flipper_mode_" + widgetId, "auto");
-        if ("auto".equals(flipperMode)) {
-            flipper.setAutoStart(true);
-            flipper.setFlipInterval(3000);
-            flipper.startFlipping();
-        } else {
-            flipper.setAutoStart(false);
-            flipper.stopFlipping();
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+        int widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            return;
         }
 
-        // Set click listener for image viewing
-        flipper.setOnClickListener(v -> {
-            Uri imageUri = getCurrentImageUri(); // Implement based on adapter
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        if (ACTION_NEXT.equals(intent.getAction()) || ACTION_PREV.equals(intent.getAction())) {
+            updateWidget(context, appWidgetManager, widgetId);
+        } else if (ACTION_VIEW_IMAGE.equals(intent.getAction())) {
+            Uri imageUri = intent.getParcelableExtra("imageUri");
             if (imageUri != null) {
                 Intent viewIntent = new Intent(Intent.ACTION_VIEW);
                 viewIntent.setDataAndType(imageUri, "image/*");
                 viewIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 context.startActivity(viewIntent);
             }
-        });
-
-        // Set next/prev button listeners
-        nextButton.setOnClickListener(v -> flipper.showNext());
-        prevButton.setOnClickListener(v -> flipper.showPrevious());
+        }
     }
 
-    public void updateFlipper() {
+    private static void updateWidget(Context context, AppWidgetManager appWidgetManager, int widgetId) {
+        SharedPreferences prefs = context.getSharedPreferences("WidgetPrefs", Context.MODE_PRIVATE);
         String flipperMode = prefs.getString("flipper_mode_" + widgetId, "auto");
+
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.flipper_widget_layout);
+
+        Intent serviceIntent = new Intent(context, FlipperWidgetService.class);
+        serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+        serviceIntent.setData(Uri.parse(serviceIntent.toUri(Intent.URI_INTENT_SCHEME)));
+        views.setRemoteAdapter(R.id.flipper, serviceIntent);
+
         if ("auto".equals(flipperMode)) {
-            flipper.setAutoStart(true);
-            flipper.setFlipInterval(3000);
-            flipper.startFlipping();
+            views.setInt(R.id.flipper, "setFlipInterval", 3000);
+            views.setBoolean(R.id.flipper, "setAutoStart", true);
         } else {
-            flipper.setAutoStart(false);
-            flipper.stopFlipping();
+            views.setBoolean(R.id.flipper, "setAutoStart", false);
+        }
+
+        Intent viewIntent = new Intent(context, FlipperWidgetProvider.class);
+        viewIntent.setAction(ACTION_VIEW_IMAGE);
+        viewIntent.putExtra(EXTRA_WIDGET_ID, widgetId);
+        PendingIntent viewPendingIntent = PendingIntent.getBroadcast(
+                context, widgetId, viewIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        views.setPendingIntentTemplate(R.id.flipper, viewPendingIntent);
+
+        Intent nextIntent = new Intent(context, FlipperWidgetProvider.class);
+        nextIntent.setAction(ACTION_NEXT);
+        nextIntent.putExtra(EXTRA_WIDGET_ID, widgetId);
+        PendingIntent nextPendingIntent = PendingIntent.getBroadcast(
+                context, widgetId, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        views.setOnClickPendingIntent(R.id.next_button, nextPendingIntent);
+
+        Intent prevIntent = new Intent(context, FlipperWidgetProvider.class);
+        prevIntent.setAction(ACTION_PREV);
+        prevIntent.putExtra(EXTRA_WIDGET_ID, widgetId);
+        PendingIntent prevPendingIntent = PendingIntent.getBroadcast(
+                context, widgetId, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        views.setOnClickPendingIntent(R.id.prev_button, prevPendingIntent);
+
+        appWidgetManager.updateAppWidget(widgetId, views);
+        if ("auto".equals(flipperMode)) {
+            appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.flipper);
         }
     }
 
-    private Uri getCurrentImageUri() {
-        // Placeholder: Implement logic to get the current image URI from the adapter
-        return null; // Replace with actual implementation
-    }
-
-    // Custom adapter to bridge FlipperWidgetService's RemoteViewsFactory
-    private static class FlipperAdapter extends android.widget.BaseAdapter {
-        private Context context;
-        private Intent serviceIntent;
-
-        public FlipperAdapter(Context context, Intent serviceIntent) {
-            this.context = context;
-            this.serviceIntent = serviceIntent;
-            // Initialize adapter data using FlipperWidgetService's logic
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        SharedPreferences prefs = context.getSharedPreferences("WidgetPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        for (int widgetId : appWidgetIds) {
+            editor.remove("flipper_mode_" + widgetId);
         }
-
-        @Override
-        public int getCount() {
-            return 0; // Implement based on FlipperWidgetService data
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return null; // Implement
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, android.view.ViewGroup parent) {
-            // Implement view creation, e.g., ImageView with URI from FlipperWidgetService
-            return null; // Replace with actual implementation
-        }
+        editor.apply();
     }
 }
