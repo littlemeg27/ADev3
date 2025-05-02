@@ -1,6 +1,8 @@
 package com.example.collectionwidgets.Fragments;
 
+import android.appwidget.AppWidgetManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -53,7 +55,8 @@ public class ImageGridFragment extends Fragment
             FlipperWidgetProvider.updateAllWidgets(requireContext());
         });
 
-        gridView.setOnItemClickListener((parent, v, position, id) -> {
+        gridView.setOnItemClickListener((parent, v, position, id) ->
+        {
             ImageData image = imageList.get(position);
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(image.getUri(), "image/*");
@@ -89,7 +92,8 @@ public class ImageGridFragment extends Fragment
         adapter.notifyDataSetChanged();
     }
 
-    private class ImageAdapter extends BaseAdapter {
+    private class ImageAdapter extends BaseAdapter
+    {
         @Override
         public int getCount()
         {
