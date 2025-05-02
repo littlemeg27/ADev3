@@ -11,6 +11,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// ItemDeleteAutomationTest
+
 public class ItemDeleteAutomationTest
 {
     private UiDevice device;

@@ -16,6 +16,10 @@ import com.example.applicationtesting.R;
 import com.example.applicationtesting.databinding.FragmentItemCreateBinding;
 import java.util.UUID;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// ItemCreateFragment
+
 public class ItemCreateFragment extends Fragment
 {
     private FragmentItemCreateBinding binding;

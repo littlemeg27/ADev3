@@ -1,5 +1,9 @@
 package com.example.applicationtesting.Model;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// Item
+
 public class Item
 {
     private String id;

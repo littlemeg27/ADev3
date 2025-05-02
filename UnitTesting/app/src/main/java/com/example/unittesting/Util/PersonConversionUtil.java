@@ -3,6 +3,10 @@ package com.example.unittesting.Util;
 import com.example.unittesting.Model.Person;
 import com.google.gson.Gson;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// PersonConversionUtil
+
 public class PersonConversionUtil
 {
     private static final Gson gson = new Gson();

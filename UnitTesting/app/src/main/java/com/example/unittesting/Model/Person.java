@@ -1,10 +1,14 @@
 package com.example.unittesting.Model;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// Person
+
 public class Person
 {
-    private String firstName;
-    private String lastName;
-    private int age;
+    private final String firstName;
+    private final String lastName;
+    private final int age;
 
     public Person(String firstName, String lastName, int age)
     {
@@ -26,11 +30,5 @@ public class Person
     public int getAge()
     {
         return age;
-    }
-
-    @Override
-    public String toString()
-    {
-        return firstName + " " + lastName + ", Age: " + age;
     }
 }

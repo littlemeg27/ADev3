@@ -15,6 +15,10 @@ import com.example.applicationtesting.Util.StorageUtil;
 import com.example.applicationtesting.R;
 import com.example.applicationtesting.databinding.FragmentItemListBinding;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// ItemListFragment
+
 public class ItemListFragment extends Fragment
 {
     private FragmentItemListBinding binding;

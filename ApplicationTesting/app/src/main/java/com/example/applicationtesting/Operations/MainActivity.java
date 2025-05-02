@@ -9,6 +9,10 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import com.example.applicationtesting.R;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// MainActivity
+
 public class MainActivity extends AppCompatActivity
 {
     @Override

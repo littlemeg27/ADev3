@@ -14,6 +14,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static java.util.regex.Pattern.matches;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// ItemCreateFragmentTest
+
 public class ItemCreateFragmentTest
 {
     @Rule

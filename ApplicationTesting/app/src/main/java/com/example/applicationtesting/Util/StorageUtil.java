@@ -4,6 +4,10 @@ import com.example.applicationtesting.Model.Item;
 import java.util.ArrayList;
 import java.util.List;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// StorageUtil
+
 public class StorageUtil
 {
     private List<Item> items = new ArrayList<>();

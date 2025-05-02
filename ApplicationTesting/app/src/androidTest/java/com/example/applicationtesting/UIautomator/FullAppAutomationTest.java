@@ -14,6 +14,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// FullAppAutomationTest
+
 public class FullAppAutomationTest
 {
     private UiDevice device;

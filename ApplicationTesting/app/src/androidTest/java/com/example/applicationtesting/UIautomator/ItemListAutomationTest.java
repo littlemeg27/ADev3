@@ -12,6 +12,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// ItemListAutomationTest
+
 public class ItemListAutomationTest
 {
     private UiDevice device;

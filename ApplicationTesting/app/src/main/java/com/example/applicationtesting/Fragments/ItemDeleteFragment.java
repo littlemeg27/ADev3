@@ -14,6 +14,10 @@ import com.example.applicationtesting.Util.StorageUtil;
 import com.example.applicationtesting.R;
 import com.example.applicationtesting.databinding.FragmentItemDeleteBinding;
 
+// Brenna Pavlinchak
+// AD3 - C202504
+// ItemDeleteFragment
+
 public class ItemDeleteFragment extends Fragment
 {
     private FragmentItemDeleteBinding binding;
